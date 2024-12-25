@@ -1,30 +1,34 @@
 import os
 import json
-from pdf2image import convert_from_path
+import fitz  # PyMuPDF
 import numpy as np
 import requests
 import faiss
-import torch
+from PIL import Image
 
-# Пути к данным (измените на ваши локальные пути)
-DATASET_PATH = 'archive/'  # Папка с PDF-файлами
-OUTPUT_PATH = 'output/'    # Папка для сохранения file_paths.json
-VECTORS_PATH = 'vectors/'  # Папка для сохранения embeddings.npy и FAISS индекса
+# Пути к данным
+DATASET_PATH = 'archive/'
+OUTPUT_PATH = 'output/'
+VECTORS_PATH = 'vectors/'
 
 os.makedirs(OUTPUT_PATH, exist_ok=True)
 os.makedirs(VECTORS_PATH, exist_ok=True)
 
-# API URL вашего локального сервера ColPali
 API_URL = "http://127.0.0.1:5000/embed/image"
 
-# Функция для обработки PDF в изображения
+# Функция для обработки PDF в изображения (через PyMuPDF)
 def pdf_to_images(pdf_path):
+    images = []
     try:
-        images = convert_from_path(pdf_path, dpi=300)
-        return images
+        pdf_document = fitz.open(pdf_path)
+        for page_number in range(len(pdf_document)):
+            page = pdf_document.load_page(page_number)
+            pix = page.get_pixmap(dpi=300)  # Устанавливаем DPI 300
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            images.append(img)
     except Exception as e:
         print(f"Ошибка при конвертации PDF {pdf_path}: {e}")
-        return []
+    return images
 
 # Функция для отправки изображения в ColPali API
 def get_embedding(image):
@@ -42,47 +46,67 @@ def get_embedding(image):
             print(f"Запрос к API не удался: {e}")
             return None
 
-# Основная функция обработки всех PDF
+# Загрузка существующих путей, чтобы избежать повторной обработки
+file_paths = {}
+json_path = os.path.join(OUTPUT_PATH, "file_paths.json")
+
+if os.path.exists(json_path):
+    with open(json_path, "r", encoding='utf-8') as f:
+        file_paths = json.load(f)
+
+# Основная функция обработки PDF
 def process_pdfs():
-    embeddings = []
-    file_paths = {}
+    global file_paths
 
     for foldername, subfolders, filenames in os.walk(DATASET_PATH):
         for filename in filenames:
             if filename.lower().endswith(".pdf"):
                 pdf_path = os.path.join(foldername, filename)
+                npy_path = os.path.join(VECTORS_PATH, f"{filename}_embeddings.npy")
+
+                # Пропускаем обработку, если эмбеддинги уже существуют
+                if os.path.exists(npy_path):
+                    print(f"PDF {filename} уже обработан. Пропуск...")
+                    continue
+
                 print(f"Обработка PDF: {pdf_path}")
-                images = pdf_to_images(pdf_path)
                 
+                images = pdf_to_images(pdf_path)
+                pdf_embeddings = []
+
                 for i, image in enumerate(images):
                     print(f"  Обработка страницы {i+1}/{len(images)}")
                     embedding = get_embedding(image)
                     if embedding is not None:
-                        embeddings.append(embedding)
-                        # Сохраняем путь к странице PDF
-                        file_paths[len(embeddings)-1] = {
+                        pdf_embeddings.append(embedding)
+                        file_paths[len(file_paths)] = {
                             "pdf": pdf_path,
                             "page": i
                         }
+                    
+                        # Сохранение пути после каждой страницы
+                        with open(json_path, "w", encoding='utf-8') as f:
+                            json.dump(file_paths, f, ensure_ascii=False, indent=4)
+                
+                # Сохранение эмбеддингов после обработки PDF
+                if pdf_embeddings:
+                    pdf_embeddings = np.array(pdf_embeddings)
+                    np.save(npy_path, pdf_embeddings)
+                    print(f"Эмбеддинги для {filename} сохранены.")
+                
+    print("PDF обработаны. Начинаем создание FAISS индекса...")
 
-    # Сохранение векторов и путей в файлы
+    # Объединение всех эмбеддингов и создание FAISS индекса
+    embeddings = []
+    for npy_file in os.listdir(VECTORS_PATH):
+        if npy_file.endswith("_embeddings.npy"):
+            embeddings.append(np.load(os.path.join(VECTORS_PATH, npy_file)))
+
     if embeddings:
-        embeddings = np.array(embeddings)
+        embeddings = np.vstack(embeddings)
         np.save(os.path.join(VECTORS_PATH, "embeddings.npy"), embeddings)
-        print(f"Эмбеддинги сохранены в {os.path.join(VECTORS_PATH, 'embeddings.npy')}")
-    else:
-        print("Эмбеддинги не были созданы.")
 
-    if file_paths:
-        with open(os.path.join(OUTPUT_PATH, "file_paths.json"), "w", encoding='utf-8') as f:
-            json.dump(file_paths, f, ensure_ascii=False, indent=4)
-        print(f"Пути к файлам сохранены в {os.path.join(OUTPUT_PATH, 'file_paths.json')}")
-    else:
-        print("Пути к файлам не были созданы.")
-
-    # Создание и сохранение индекса FAISS
-    if embeddings:
-        d = embeddings.shape[1]  # Размерность эмбеддингов
+        d = embeddings.shape[1]
         index = faiss.IndexFlatL2(d)
         index.add(embeddings)
         faiss_index_path = os.path.join(VECTORS_PATH, "faiss_index.index")
@@ -91,6 +115,6 @@ def process_pdfs():
     else:
         print("Эмбеддинги не загружены. FAISS индекс не создан.")
 
-    print("Обработка завершена! Векторы сохранены и FAISS индекс создан.")
+    print("Обработка завершена!")
 
 process_pdfs()
