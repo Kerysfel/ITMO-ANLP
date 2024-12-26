@@ -1,0 +1,21 @@
+paths:
+  pdf_folder: "archive/"
+  output_folder: "data/output/"
+  paths_file: "configs/paths.yaml"
+
+milvus:
+  host: "localhost"
+  port: 19530
+  collection_name: "cheat_sheets"
+  embedding_dim: 768
+  index_type: "IVF_FLAT"   # Алгоритм индексации
+  metric_type: "L2"        # Метрика для поиска ближайших соседей
+  nprobe: 10               # Количество кандидатов для поиска
+
+model:
+  qwen2_vl_path: "Qwen/Qwen2-VL-2B-Instruct"
+  colpali_path: "vidore/colpali-v1.3"
+
+generation:
+  max_tokens: 256
+  temperature: 0.7
