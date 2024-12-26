@@ -8,6 +8,7 @@ from transformers import Qwen2VLForConditionalGeneration, AutoProcessor, BitsAnd
 from qwen_vl_utils import process_vision_info
 import torch
 import requests
+torch.cuda.empty_cache()
 
 # =====================
 # РАЗРЕШАЕМ ДУБЛИРОВАНИЕ OpenMP
@@ -37,7 +38,7 @@ try:
         quantization_config=quantization_config,
         torch_dtype=torch.float16,
         device_map="auto",
-        attn_implementation="flash_attention_2"  # Ускорение через Flash Attention 2
+        #attn_implementation="flash_attention_2"  # Ускорение через Flash Attention 2
     )
     processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-2B-Instruct")
 
@@ -52,7 +53,7 @@ try:
     with open(os.path.join(OUTPUT_PATH, "file_paths.json"), "r", encoding='utf-8') as f:
         file_paths = json.load(f)
 
-    PAGE_LIMIT = 5
+    PAGE_LIMIT = 1
 
     # Функция поиска в FAISS
     def search_faiss(query_embedding, index, top_k=50):
@@ -137,7 +138,7 @@ try:
             image = extract_page_image(pdf_path, page_number)
             process_with_qwen2(image, query, pdf_path, page_number)
 
-    search_and_process("Explain how Convolutional Neural Networks (CNN) work", index_type="expanded")
+    search_and_process("Explain how Convolutional Neural Networks (CNN) work", index_type="pooled")
 
 except Exception as e:
     print(f"Ошибка: {e}")
