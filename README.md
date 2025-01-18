@@ -1,4 +1,4 @@
-# The Ultimate CheatSheet RAG System (Excel Focus)
+# The Ultimate CheatSheet RAG System
 
 ## Description
 This repository hosts an advanced Retrieval-Augmented Generation (RAG)
