@@ -2,8 +2,7 @@
 
 ## Description
 This repository hosts an advanced Retrieval-Augmented Generation (RAG)
-system, primarily focused on Excel cheat sheets and shortcuts. It combines
-a robust vector-based retrieval mechanism with a large language model,
+system. It combines a robust vector-based retrieval mechanism with a large language model,
 enabling **accurate** and **context-aware** answers to user queries.
 
 It supports a variety of file formats, notably PDFs (including potential
