@@ -37,7 +37,7 @@ structured information and building a comprehensive knowledge base.
 ## Example Workflow
 ![Example Implementation](https://github.com/Kerysfel/ITMO-ANLP/blob/main/answer.png)
 
-1. **Load Excel PDF**  
+1. **Load PDFs**  
 2. **Extract Text** (and images if present)  
 3. **Compute Embeddings** for text and/or images  
 4. **Store** in Milvus  
