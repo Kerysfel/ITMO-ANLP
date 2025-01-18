@@ -7,10 +7,10 @@ milvus:
   host: "localhost"
   port: 19530
   collection_name: "cheat_sheets"
-  embedding_dim: 768
-  index_type: "IVF_FLAT"   # Алгоритм индексации
-  metric_type: "L2"        # Метрика для поиска ближайших соседей
-  nprobe: 10               # Количество кандидатов для поиска
+  embedding_dim: 128
+  index_type: "IVF_FLAT"
+  metric_type: "L2"
+  nprobe: 10
 
 model:
   qwen2_vl_path: "Qwen/Qwen2-VL-2B-Instruct"

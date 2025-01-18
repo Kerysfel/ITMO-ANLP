@@ -6,19 +6,21 @@ class RAGAgent:
         self.history = []
 
     async def run(self, query: str):
-        # 1. Поиск по Milvus
+        # 1. Search in Milvus
         search_results = search_milvus(query)
-        
+
         if not search_results:
-            return "К сожалению, ничего не найдено в cheat sheets."
+            return "Unfortunately, nothing was found in the cheat sheets."
 
-        # 2. Сбор контекста из найденных документов
-        context = "\n".join([result.entity.get("text", "") for result in search_results])
+        # 2. Collect context from retrieved documents
+        context = "\n".join([
+            result.entity.get("text", "") for result in search_results
+        ])
 
-        # 3. Генерация ответа на основе контекста
+        # 3. Generate answer
         response = generate_response(context, query)
-        
-        # 4. Сохранение истории для дальнейшего анализа
+
+        # 4. Save query-response history
         self.history.append({"query": query, "response": response})
-        
+
         return response

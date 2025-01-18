@@ -11,13 +11,22 @@ class ColPaliModel:
         self.processor = ColPaliProcessor.from_pretrained(model_path)
 
     def embed_text(self, text: str):
+        """
+        Embeds a given text using ColPali's text pipeline.
+        Returns a NumPy array, shape (1, 128).
+        """
         batch_queries = self.processor.process_queries([text]).to(self.device)
         with torch.no_grad():
             embeddings = self.model(**batch_queries)
         return embeddings.cpu().numpy()
 
     def embed_image(self, image):
+        """
+        Embeds a given PIL image using ColPali's image pipeline.
+        Returns a pooled embedding, shape (1, 128).
+        """
         batch_images = self.processor.process_images([image]).to(self.device)
         with torch.no_grad():
             embeddings = self.model(**batch_images)
-        return embeddings.cpu().numpy()
+        pooled_embedding = embeddings.mean(dim=1)
+        return pooled_embedding.cpu().numpy()

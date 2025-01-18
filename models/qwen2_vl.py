@@ -11,12 +11,25 @@ class Qwen2VLModel:
         self.processor = AutoProcessor.from_pretrained(model_path)
 
     def generate(self, context: str, image=None, max_tokens=256, temperature=0.7):
-        messages = [{"role": "user", "content": [{"type": "text", "text": context}]}]
+        """
+        Generates text using Qwen2-VL with optional image input.
+        """
+        messages = [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": context}]
+            }
+        ]
 
         if image:
             messages[0]["content"].append({"type": "image", "image": image})
 
-        text_input = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        text_input = self.processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+
         inputs = self.processor(
             text=[text_input],
             images=[image] if image else None,
@@ -29,4 +42,5 @@ class Qwen2VLModel:
                 max_new_tokens=max_tokens,
                 temperature=temperature
             )
+
         return self.processor.batch_decode(outputs, skip_special_tokens=True)[0]
