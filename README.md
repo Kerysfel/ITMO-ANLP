@@ -35,7 +35,7 @@ structured information and building a comprehensive knowledge base.
 - **Image Handling**: PIL  
 
 ## Example Workflow
-![Example Implementation](https://github.com/Kerysfel/ANLP-RAG-/blob/main/example.png)
+![Example Implementation](https://github.com/Kerysfel/ITMO-ANLP/blob/main/answer.png)
 
 1. **Load Excel PDF**  
 2. **Extract Text** (and images if present)  
