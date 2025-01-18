@@ -1,0 +1,27 @@
+# FastAPI и сервер
+fastapi==0.100.0
+uvicorn==0.23.0
+
+# Milvus
+pymilvus==2.2.15
+milvus==2.2.15
+
+# Обработка PDF и изображений
+PyMuPDF==1.22.3
+Pillow==10.0.0
+
+# Hugging Face Transformers и Torch
+transformers==4.34.0
+torch==2.1.0
+sentence-transformers==2.2.2
+
+pyyaml==6.0
+
+numpy==1.23.5
+scikit-learn==1.2.2
+
+# Утилиты для генерации PDF
+reportlab==4.0.4
+
+# API и веб-запросы
+requests==2.31.0
