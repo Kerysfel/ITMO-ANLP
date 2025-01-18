@@ -54,7 +54,6 @@ response time and the proportion of correctly answered queries.
 - **Accuracy**: 68% of the questions received satisfactory answers.
 
 ## TO DO:
-- [ ] Expand coverage for more Excel functionalities (pivot tables, macros, etc.)  
 - [ ] Integrate Tesseract OCR if scanned PDFs are present  
 - [ ] Improve chunking & summarization for large or complex cheat sheets  
 - [ ] Add a more detailed evaluation framework (BLEU, ROUGE, etc.)  
